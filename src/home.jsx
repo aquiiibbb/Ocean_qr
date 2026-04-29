@@ -76,8 +76,8 @@ export default function ReviewHomePage() {
 
                 {/* Body */}
                 <div className="card-body">
-                  
-                    
+
+
                     {/* Google */}
                     <button
                         className="platform-btn google-btn"
@@ -127,8 +127,7 @@ export default function ReviewHomePage() {
                 {/* Footer with Logo */}
                 <div className="card-footer">
                     <h2 className="footer-hotel-name">OCEAN PARRADISE </h2>
-                    <p className="footer-hotel-tagline">
-WA 98569, United States</p>
+                    <p className="footer-hotel-tagline">773 Ocean Shores Blvd NW, Ocean Shores</p>
                 </div>
             </div>
         </div>

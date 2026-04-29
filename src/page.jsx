@@ -43,7 +43,7 @@ function Page() {
 
     if (r >= 4) {
       // High rating (4-5 stars) - direct redirect to Google Reviews
-      alert("Thank you for your positive feedback! Redirecting to Google Reviews...");
+     
       setTimeout(() => {
         window.open("https://g.page/r/Cea7NympeaWAEBM/review", "_blank");
         // Reset form after redirect
@@ -198,7 +198,7 @@ function Page() {
             </div>
             {rating > 0 && <p className="rating-label">{labels[rating]}</p>}
             {rating >= 4 && (
-              <p className="redirect-message">Redirecting to Google Reviews...</p>
+              <p className="redirect-message"></p>
             )}
           </div>
         )}
