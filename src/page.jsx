@@ -10,7 +10,7 @@ function Page() {
   const [submitted, setSubmitted] = useState(false);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [ratingFixed, setRatingFixed] = useState(false);
-  
+
   // User info state
   const [userInfo, setUserInfo] = useState({
     name: "",
@@ -30,10 +30,10 @@ function Page() {
   const handleRating = (r) => {
     // Only allow rating change if not fixed
     if (ratingFixed) return;
-    
+
     setRating(r);
     setRatingFixed(true);
-    
+
     if (r >= 4) {
       // High rating (4-5 stars) - direct redirect to Google Reviews
       alert("Thank you for your positive feedback! Redirecting to Google Reviews...");
@@ -56,12 +56,12 @@ function Page() {
       alert("Please enter your name.");
       return;
     }
-    
+
     if (!userInfo.email.trim()) {
       alert("Please enter your email.");
       return;
     }
-    
+
     if (!userInfo.phone.trim()) {
       alert("Please enter a valid phone number.");
       return;
@@ -97,10 +97,10 @@ function Page() {
       };
 
       console.log("Submitting low rating feedback:", feedbackData);
-      
-      const response = await axios.post("http://localhost:5000/feedback", feedbackData);
+
+      const response = await axios.post("https://ocean-qr-backend.vercel.app/feedback", feedbackData);
       console.log("Low rating saved:", response.data);
-      
+
       setSubmitted(true);
     } catch (error) {
       console.error("Error submitting feedback:", error);
@@ -138,7 +138,7 @@ function Page() {
         <div className="hotel-icon"><img src={hotelLogo1} alt="Hotel Logo" /></div>
         <h1>How was your stay?</h1>
         <p className="subtitle">Please rate your experience with us</p>
-        
+
         {/* Rating Section - Shows first */}
         {!showUserForm && (
           <div className="rating-section">
@@ -192,7 +192,7 @@ function Page() {
               className="input-field"
               required
             />
-            
+
             {/* Fixed Rating Display - Only selected stars, centered */}
             <div className="rating-display">
               <p className="rating-text">Your rating:</p>
@@ -215,13 +215,13 @@ function Page() {
                 required
               />
             </div>
-            
+
             <button className="btn" onClick={handleUserSubmit}>
               Submit Feedback
             </button>
           </div>
         )}
-      </div>  
+      </div>
     </div>
   );
 }
