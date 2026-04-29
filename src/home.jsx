@@ -128,6 +128,7 @@ export default function ReviewHomePage() {
                 <div className="card-footer">
                     <h2 className="footer-hotel-name">OCEAN PARRADISE </h2>
                     <p className="footer-hotel-tagline">773 Ocean Shores Blvd NW, Ocean Shores</p>
+                    <p className="footer-hotel-tagline" style={{color:"white"}}>📞 +1 360-289-0664</p>
                 </div>
             </div>
         </div>
