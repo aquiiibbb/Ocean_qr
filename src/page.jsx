@@ -10,7 +10,7 @@ function Page() {
   const [submitted, setSubmitted] = useState(false);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [ratingFixed, setRatingFixed] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // User info state
   const [userInfo, setUserInfo] = useState({
@@ -43,14 +43,10 @@ function Page() {
 
     if (r >= 4) {
       // High rating (4-5 stars) - direct redirect to Google Reviews
-     
       setTimeout(() => {
-        window.open("https://g.page/r/Cea7NympeaWAEBM/review", "_blank");
-        // Reset form after redirect
-        setTimeout(() => {
-          resetForm();
-        }, 100);
-      }, 100);
+        // Use window.location.href instead of window.open to avoid popup
+        window.location.href = "https://g.page/r/Cea7NympeaWAEBM/review";
+      }, 500);
     } else if (r <= 3) {
       // Low rating (1-3 stars) - show user form
       setShowUserForm(true);
@@ -198,7 +194,7 @@ function Page() {
             </div>
             {rating > 0 && <p className="rating-label">{labels[rating]}</p>}
             {rating >= 4 && (
-              <p className="redirect-message"></p>
+              <p className="redirect-message">Redirecting to Google Reviews...</p>
             )}
           </div>
         )}
