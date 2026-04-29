@@ -49,8 +49,8 @@ function Page() {
         // Reset form after redirect
         setTimeout(() => {
           resetForm();
-        }, 1000);
-      }, 1500);
+        }, 100);
+      }, 100);
     } else if (r <= 3) {
       // Low rating (1-3 stars) - show user form
       setShowUserForm(true);
