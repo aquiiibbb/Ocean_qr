@@ -10,6 +10,7 @@ function Page() {
   const [submitted, setSubmitted] = useState(false);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [ratingFixed, setRatingFixed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Loading state
 
   // User info state
   const [userInfo, setUserInfo] = useState({
@@ -19,6 +20,12 @@ function Page() {
   });
 
   const labels = ["", "😠 Very Bad", "😕 Bad", "😐 Okay", "🙂 Good", "😄 Excellent"];
+
+  // API URL - use environment variable or fallback
+  const API_URL = process.env.REACT_APP_API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    import.meta.env?.VITE_API_URL ||
+    "https://ocean-qr-backend.vercel.app";
 
   const handleUserInfo = (e) => {
     setUserInfo({
@@ -86,6 +93,8 @@ function Page() {
       return;
     }
 
+    setIsSubmitting(true);
+
     // Submit low rating feedback
     try {
       const feedbackData = {
@@ -96,15 +105,46 @@ function Page() {
         message: message.trim()
       };
 
-      console.log("Submitting low rating feedback:", feedbackData);
+      console.log("🚀 Submitting to:", `${API_URL}/feedback`);
+      console.log("📤 Feedback data:", feedbackData);
 
-      const response = await axios.post("https://ocean-qr-backend.vercel.app/feedback", feedbackData);
-      console.log("Low rating saved:", response.data);
+      // Configure axios with better error handling
+      const response = await axios({
+        method: 'POST',
+        url: `${API_URL}/feedback`,
+        data: feedbackData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000, // 30 second timeout
+      });
 
+      console.log("✅ Response:", response.data);
       setSubmitted(true);
+
     } catch (error) {
-      console.error("Error submitting feedback:", error);
-      alert("Failed to submit feedback. Please try again.");
+      console.error("❌ Full error:", error);
+
+      let errorMessage = "Failed to submit feedback. Please try again.";
+
+      if (error.response) {
+        // Server responded with error status
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+        errorMessage = error.response.data?.error || `Server error (${error.response.status})`;
+      } else if (error.request) {
+        // Request was made but no response received
+        console.error("No response received:", error.request);
+        errorMessage = "Network error. Please check your connection.";
+      } else {
+        // Something else happened
+        console.error("Request setup error:", error.message);
+        errorMessage = error.message;
+      }
+
+      alert(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -116,6 +156,7 @@ function Page() {
     setShowUserForm(false);
     setHoveredRating(0);
     setRatingFixed(false);
+    setIsSubmitting(false);
   };
 
   if (submitted) {
@@ -173,6 +214,7 @@ function Page() {
               onChange={handleUserInfo}
               className="input-field"
               required
+              disabled={isSubmitting}
             />
             <input
               type="email"
@@ -182,6 +224,7 @@ function Page() {
               onChange={handleUserInfo}
               className="input-field"
               required
+              disabled={isSubmitting}
             />
             <input
               type="tel"
@@ -191,6 +234,7 @@ function Page() {
               onChange={handleUserInfo}
               className="input-field"
               required
+              disabled={isSubmitting}
             />
 
             {/* Fixed Rating Display - Only selected stars, centered */}
@@ -213,11 +257,16 @@ function Page() {
                 onChange={(e) => setMessage(e.target.value)}
                 rows={4}
                 required
+                disabled={isSubmitting}
               />
             </div>
 
-            <button className="btn" onClick={handleUserSubmit}>
-              Submit Feedback
+            <button
+              className="btn"
+              onClick={handleUserSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Feedback"}
             </button>
           </div>
         )}
