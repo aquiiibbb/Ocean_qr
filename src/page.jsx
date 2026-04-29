@@ -38,7 +38,7 @@ function Page() {
       // High rating (4-5 stars) - direct redirect to Google Reviews
       alert("Thank you for your positive feedback! Redirecting to Google Reviews...");
       setTimeout(() => {
-        window.open("https://g.page/r/CZuCqInf65YPEBM/review", "_blank");
+        window.open("https://g.page/r/Cea7NympeaWAEBM/review", "_blank");
         // Reset form after redirect
         setTimeout(() => {
           resetForm();
