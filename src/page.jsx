@@ -25,7 +25,7 @@ function Page() {
   const API_URL = process.env.REACT_APP_API_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
     import.meta.env?.VITE_API_URL ||
-    "https://ocean-qr-backend.vercel.app";
+    "https://ocean-qr-backend.onrender.com";
 
   const handleUserInfo = (e) => {
     setUserInfo({
