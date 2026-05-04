@@ -21,12 +21,6 @@ function Page() {
 
   const labels = ["", "😠 Very Bad", "😕 Bad", "😐 Okay", "🙂 Good", "😄 Excellent"];
 
-  // API URL - use environment variable or fallback
-  const API_URL = process.env.REACT_APP_API_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    import.meta.env?.VITE_API_URL ||
-    "https://ocean-qr-backend.onrender.com";
-
   const handleUserInfo = (e) => {
     setUserInfo({
       ...userInfo,
@@ -34,27 +28,54 @@ function Page() {
     });
   };
 
-  const handleRating = (r) => {
-    // Only allow rating change if not fixed
+  const handleRating = async (r) => {
     if (ratingFixed) return;
 
     setRating(r);
     setRatingFixed(true);
 
     if (r >= 4) {
-      // High rating (4-5 stars) - direct redirect to Google Reviews
+      // High rating - save to database first, then redirect to Google Reviews
+      try {
+        const ratingData = {
+          rating: r,
+          message: "Redirected to Google Reviews",
+          name: "Anonymous",
+          email: "anonymous@email.com",
+          phone: "0000000000"
+        };
+
+        await axios.post(
+          "https://ocean-qr-backend.onrender.com/feedback",
+          ratingData,
+          {
+            timeout: 10000,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+      } catch (error) {
+        console.error("Error saving high rating:", error);
+        // Continue with redirect even if save fails
+      }
+
+      // Redirect after saving
       setTimeout(() => {
-        // Use window.location.href instead of window.open to avoid popup
-        window.location.href = "https://g.page/r/Cea7NympeaWAEBM/review";
-      }, 500);
+        window.open("https://g.page/r/Cea7NympeaWAEBM/review", "_blank");
+        // Reset form after redirect
+        setTimeout(() => {
+          resetForm();
+        }, 100);
+      }, 1000);
     } else if (r <= 3) {
-      // Low rating (1-3 stars) - show user form
+      // Low rating - show feedback form
       setShowUserForm(true);
     }
   };
 
   const handleUserSubmit = async () => {
-    // Validate user info
+    // Validation
     if (!userInfo.name.trim()) {
       alert("Please enter your name.");
       return;
@@ -70,20 +91,17 @@ function Page() {
       return;
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(userInfo.email)) {
       alert("Please enter a valid email address.");
       return;
     }
 
-    // Phone validation
     if (userInfo.phone.length < 10) {
       alert("Please enter a valid phone number.");
       return;
     }
 
-    // For low ratings (1-3), require feedback message
     if (!message.trim()) {
       alert("Please enter your feedback message.");
       return;
@@ -91,7 +109,6 @@ function Page() {
 
     setIsSubmitting(true);
 
-    // Submit low rating feedback
     try {
       const feedbackData = {
         name: userInfo.name.trim(),
@@ -101,41 +118,33 @@ function Page() {
         message: message.trim()
       };
 
-      console.log("🚀 Submitting to:", `${API_URL}/feedback`);
-      console.log("📤 Feedback data:", feedbackData);
+      console.log("Submitting feedback:", feedbackData);
 
-      // Configure axios with better error handling
-      const response = await axios({
-        method: 'POST',
-        url: `${API_URL}/feedback`,
-        data: feedbackData,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        timeout: 30000, // 30 second timeout
-      });
+      const response = await axios.post(
+        "https://ocean-qr-backend.onrender.com/feedback",
+        feedbackData,
+        {
+          timeout: 60000,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
-      console.log("✅ Response:", response.data);
+      console.log("Feedback saved:", response.data);
       setSubmitted(true);
 
     } catch (error) {
-      console.error("❌ Full error:", error);
+      console.error("Error submitting feedback:", error);
 
       let errorMessage = "Failed to submit feedback. Please try again.";
 
-      if (error.response) {
-        // Server responded with error status
-        console.error("Response data:", error.response.data);
-        console.error("Response status:", error.response.status);
-        errorMessage = error.response.data?.error || `Server error (${error.response.status})`;
-      } else if (error.request) {
-        // Request was made but no response received
-        console.error("No response received:", error.request);
-        errorMessage = "Network error. Please check your connection.";
-      } else {
-        // Something else happened
-        console.error("Request setup error:", error.message);
-        errorMessage = error.message;
+      if (error.code === 'ECONNABORTED') {
+        errorMessage = "Request timed out. Server might be starting up - please try again in a moment.";
+      } else if (error.response?.status === 502) {
+        errorMessage = "Server is temporarily unavailable. Please try again in a moment.";
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
       }
 
       alert(errorMessage);
@@ -173,10 +182,9 @@ function Page() {
     <div className="container">
       <div className="card">
         <div className="hotel-icon"><img src={hotelLogo1} alt="Hotel Logo" /></div>
-        <h1>How was your stay?</h1>
+        <h1>How was your dining experience?</h1>
         <p className="subtitle">Please rate your experience with us</p>
 
-        {/* Rating Section - Shows first */}
         {!showUserForm && (
           <div className="rating-section">
             <p className="rating-text">Rate your experience:</p>
@@ -194,12 +202,11 @@ function Page() {
             </div>
             {rating > 0 && <p className="rating-label">{labels[rating]}</p>}
             {rating >= 4 && (
-              <p className="redirect-message">Redirecting to Google Reviews...</p>
+              <p className="redirect-message">Saving your rating... Opening Google Reviews...</p>
             )}
           </div>
         )}
 
-        {/* User Details Section - Only for low ratings (1-3) */}
         {showUserForm && rating <= 3 && (
           <div className="user-details">
             <input
@@ -233,7 +240,6 @@ function Page() {
               disabled={isSubmitting}
             />
 
-            {/* Fixed Rating Display - Only selected stars, centered */}
             <div className="rating-display">
               <p className="rating-text">Your rating:</p>
               <div className="selected-stars">
@@ -244,7 +250,6 @@ function Page() {
               <p className="rating-label">{labels[rating]}</p>
             </div>
 
-            {/* Feedback Form - Only for low ratings */}
             <div className="feedback-form">
               <h3>We're sorry to hear that! What went wrong?</h3>
               <textarea
