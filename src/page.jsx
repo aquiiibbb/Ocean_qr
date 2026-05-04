@@ -49,7 +49,7 @@ function Page() {
           "https://ocean-qr-backend.onrender.com/feedback",
           ratingData,
           {
-            timeout: 10000,
+            timeout: 5000,
             headers: {
               'Content-Type': 'application/json'
             }
@@ -67,7 +67,7 @@ function Page() {
         setTimeout(() => {
           resetForm();
         }, 100);
-      }, 1000);
+      }, 500);
     } else if (r <= 3) {
       // Low rating - show feedback form
       setShowUserForm(true);
