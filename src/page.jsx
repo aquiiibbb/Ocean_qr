@@ -1,279 +1,301 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import "./page.css";
-import hotelLogo1 from './assets/logo.jpg';
+import "./Dashboard.css";
+import Login from "./login";
+import hotelLogo2 from './assets/logo.jpg';
+import bg2 from './assets/bg.gif';
 
-function Page() {
-  const [rating, setRating] = useState(0);
-  const [message, setMessage] = useState("");
-  const [showUserForm, setShowUserForm] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [hoveredRating, setHoveredRating] = useState(0);
-  const [ratingFixed, setRatingFixed] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+function DashboardContent({ onLogout }) {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // User info state
-  const [userInfo, setUserInfo] = useState({
-    name: "",
-    email: "",
-    phone: ""
-  });
+  useEffect(() => {
+    fetchFeedback();
+  }, []);
 
-  const labels = ["", "😠 Very Bad", "😕 Bad", "😐 Okay", "🙂 Good", "😄 Excellent"];
-
-  const handleUserInfo = (e) => {
-    setUserInfo({
-      ...userInfo,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleRating = async (r) => {
-    if (ratingFixed) return;
-
-    setRating(r);
-    setRatingFixed(true);
-
-    if (r >= 4) {
-      // High rating - save to database first, then redirect to Google Reviews
-      try {
-        const ratingData = {
-          rating: r,
-          message: "Redirected to Google Reviews",
-          name: "Anonymous",
-          email: "anonymous@email.com",
-          phone: "0000000000"
-        };
-
-        await axios.post(
-          "https://ocean-qr-backend.onrender.com/feedback",
-          ratingData,
-          {
-            timeout: 5000,
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-      } catch (error) {
-        console.error("Error saving high rating:", error);
-        // Continue with redirect even if save fails
-      }
-
-      // Redirect after saving
-      setTimeout(() => {
-        window.open("https://g.page/r/Cea7NympeaWAEBM/review", "_blank");
-        // Reset form after redirect
-        setTimeout(() => {
-          resetForm();
-        }, 100);
-      }, 500);
-    } else if (r <= 3) {
-      // Low rating - show feedback form
-      setShowUserForm(true);
-    }
-  };
-
-  const handleUserSubmit = async () => {
-    // Validation
-    if (!userInfo.name.trim()) {
-      alert("Please enter your name.");
-      return;
-    }
-
-    if (!userInfo.email.trim()) {
-      alert("Please enter your email.");
-      return;
-    }
-
-    if (!userInfo.phone.trim()) {
-      alert("Please enter a valid phone number.");
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(userInfo.email)) {
-      alert("Please enter a valid email address.");
-      return;
-    }
-
-    if (userInfo.phone.length < 10) {
-      alert("Please enter a valid phone number.");
-      return;
-    }
-
-    if (!message.trim()) {
-      alert("Please enter your feedback message.");
-      return;
-    }
-
-    setIsSubmitting(true);
-
+  const fetchFeedback = async () => {
     try {
-      const feedbackData = {
-        name: userInfo.name.trim(),
-        email: userInfo.email.trim(),
-        phone: userInfo.phone.trim(),
-        rating: rating,
-        message: message.trim()
-      };
+      console.log("🔄 Fetching feedback data...");
+      const response = await axios.get("https://ocean-qr-backend.onrender.com/feedback");
+      console.log("📊 Dashboard API Response:", response.data);
 
-      console.log("Submitting feedback:", feedbackData);
+      const feedbackData = response.data.data || response.data;
+      console.log("📋 Processed feedback data:", feedbackData);
 
-      const response = await axios.post(
-        "https://ocean-qr-backend.onrender.com/feedback",
-        feedbackData,
-        {
-          timeout: 60000,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      console.log("Feedback saved:", response.data);
-      setSubmitted(true);
-
+      setData(feedbackData);
+      setLoading(false);
     } catch (error) {
-      console.error("Error submitting feedback:", error);
-
-      let errorMessage = "Failed to submit feedback. Please try again.";
-
-      if (error.code === 'ECONNABORTED') {
-        errorMessage = "Request timed out. Server might be starting up - please try again in a moment.";
-      } else if (error.response?.status === 502) {
-        errorMessage = "Server is temporarily unavailable. Please try again in a moment.";
-      } else if (error.response?.data?.error) {
-        errorMessage = error.response.data.error;
-      }
-
-      alert(errorMessage);
-    } finally {
-      setIsSubmitting(false);
+      console.error("❌ Dashboard API Error:", error);
+      setLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setSubmitted(false);
-    setUserInfo({ name: "", email: "", phone: "" });
-    setRating(0);
-    setMessage("");
-    setShowUserForm(false);
-    setHoveredRating(0);
-    setRatingFixed(false);
-    setIsSubmitting(false);
+  const avgRating = data.length
+    ? (data.reduce((s, i) => s + i.rating, 0) / data.length).toFixed(1)
+    : "—";
+
+  const filtered = filter === "all" ? data : data.filter(d => d.rating === Number(filter));
+
+  const deleteFeedback = async (id) => {
+    if (window.confirm("Are you sure you want to delete this feedback?")) {
+      try {
+        await axios.delete(`https://ocean-qr-backend.onrender.com/feedback/${id}`);
+        setData(data.filter(item => item._id !== id));
+        alert("Feedback deleted successfully!");
+      } catch (error) {
+        console.error("Delete error:", error);
+        alert("Failed to delete feedback");
+      }
+    }
   };
 
-  if (submitted) {
-    return (
-      <div className="container">
-        <div className="card">
-          <div className="hotel-icon"><img src={hotelLogo1} alt="Hotel Logo" /></div>
-          <div className="checkmark">✔</div>
-          <h2>Thank You!</h2>
-          <p className="subtitle">Your feedback helps us improve our service.</p>
-          <button className="btn" onClick={resetForm}>Submit Another Review</button>
-        </div>
-      </div>
-    );
-  }
+  // Close sidebar when clicking outside
+  const handleOverlayClick = () => {
+    setSidebarOpen(false);
+  };
+
+  // Close sidebar when clicking on nav items (mobile)
+  const handleNavClick = () => {
+    if (window.innerWidth <= 768) {
+      setSidebarOpen(false);
+    }
+  };
 
   return (
-    <div className="container">
-      <div className="card">
-        <div className="hotel-icon"><img src={hotelLogo1} alt="Hotel Logo" /></div>
-        <h1>How was your dining experience?</h1>
-        <p className="subtitle">Please rate your experience with us</p>
+    <div className="dashboard">
+      {/* Sidebar Overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={handleOverlayClick}
+        ></div>
+      )}
 
-        {!showUserForm && (
-          <div className="rating-section">
-            <p className="rating-text">Rate your experience:</p>
-            <div className="stars">
-              {[1, 2, 3, 4, 5].map((r) => (
-                <button
-                  key={r}
-                  className={`star ${r <= (hoveredRating || rating) ? "active" : ""} ${ratingFixed ? "fixed" : ""}`}
-                  onClick={() => handleRating(r)}
-                  onMouseEnter={() => !ratingFixed && setHoveredRating(r)}
-                  onMouseLeave={() => !ratingFixed && setHoveredRating(0)}
-                  disabled={ratingFixed}
-                >★</button>
-              ))}
-            </div>
-            {rating > 0 && <p className="rating-label">{labels[rating]}</p>}
-            {rating >= 4 && (
-              <p className="redirect-message">Saving your rating... Opening Google Reviews...</p>
-            )}
-          </div>
-        )}
+      {/* Sidebar */}
+      <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
+        {/* Close button for mobile */}
+        <button
+          className="sidebar-close"
+          onClick={() => setSidebarOpen(false)}
+        >
+          ✕
+        </button>
 
-        {showUserForm && rating <= 3 && (
-          <div className="user-details">
-            <input
-              type="text"
-              name="name"
-              placeholder="Your Full Name *"
-              value={userInfo.name}
-              onChange={handleUserInfo}
-              className="input-field"
-              required
-              disabled={isSubmitting}
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Email Address *"
-              value={userInfo.email}
-              onChange={handleUserInfo}
-              className="input-field"
-              required
-              disabled={isSubmitting}
-            />
-            <input
-              type="tel"
-              name="phone"
-              placeholder="Phone Number *"
-              value={userInfo.phone}
-              onChange={handleUserInfo}
-              className="input-field"
-              required
-              disabled={isSubmitting}
-            />
+        <div className="sidebar-logo">
+          <img style={{ height: "100px", width: "100px" }} src={hotelLogo2} alt="Restaurant Logo" />
+        </div>
+        <h2>Ocean Restaurant</h2>
 
-            <div className="rating-display">
-              <p className="rating-text">Your rating:</p>
-              <div className="selected-stars">
-                {Array.from({ length: rating }, (_, index) => (
-                  <span key={index} className="star-selected">★</span>
-                ))}
-              </div>
-              <p className="rating-label">{labels[rating]}</p>
-            </div>
+        <nav>
+          <button
+            className="nav-item active"
+            onClick={handleNavClick}
+          >
+            📋 Feedback
+          </button>
+          <button
+            className="nav-item"
+            onClick={handleNavClick}
+          >
+            📊 Analytics
+          </button>
+          <button
+            className="nav-item"
+            onClick={handleNavClick}
+          >
+            ⚙️ Settings
+          </button>
+        </nav>
 
-            <div className="feedback-form">
-              <h3>We're sorry to hear that! What went wrong?</h3>
-              <textarea
-                placeholder="Please describe your experience in detail so we can improve..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                rows={4}
-                required
-                disabled={isSubmitting}
-              />
-            </div>
+        <div className="sidebar-footer">
+          <p>© 2024 Ocean Restaurant<br />
+            All rights reserved</p>
+        </div>
+      </aside>
 
+      {/* Main Content */}
+      <main className="main">
+        <div className="topbar">
+          <div className="topbar-left">
+            {/* Mobile Menu Button */}
             <button
-              className="btn"
-              onClick={handleUserSubmit}
-              disabled={isSubmitting}
+              className="mobile-menu-btn"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label="Toggle menu"
             >
-              {isSubmitting ? "Submitting..." : "Submit Feedback"}
+              ☰
+            </button>
+            <h1>Dashboard</h1>
+          </div>
+          <div className="topbar-right">
+            <span className="badge">{data.length} Total</span>
+            <button className="logout-btn" onClick={onLogout}>
+              Logout
             </button>
           </div>
-        )}
-      </div>
+        </div>
+
+        {/* Stat Cards */}
+        <div className="stats-row">
+          <div className="stat-card">
+            <div className="stat-icon">⭐</div>
+            <div className="stat-value">{avgRating}</div>
+            <div className="stat-label">Avg Rating</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon">📋</div>
+            <div className="stat-value">{data.length}</div>
+            <div className="stat-label">Total Feedback</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon">⚠️</div>
+            <div className="stat-value">{data.filter(d => d.rating < 4).length}</div>
+            <div className="stat-label">Needs Attention</div>
+          </div>
+          <div className="stat-card good-reviews">
+            <div className="stat-icon">😊</div>
+            <div className="stat-value">{data.filter(d => d.rating >= 4).length}</div>
+            <div className="stat-label">Happy Customers</div>
+          </div>
+        </div>
+
+        {/* Filter Bar */}
+        <div className="filter-bar">
+          <span className="filter-label">Filter by rating:</span>
+          <div className="filter-buttons">
+            {["all", "1", "2", "3", "4", "5"].map(f => (
+              <button
+                key={f}
+                className={`filter-btn ${filter === f ? "active" : ""}`}
+                onClick={() => setFilter(f)}
+              >
+                {f === "all" ? "All" : "★".repeat(Number(f))}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Feedback List */}
+        <div className="feedback-list">
+          {loading ? (
+            <div className="empty">Loading...</div>
+          ) : filtered.length === 0 ? (
+            <div className="empty">📭 No feedback found.</div>
+          ) : (
+            filtered.map((item, i) => {
+              console.log("🔍 Rendering item:", item);
+              return (
+                <div key={item._id || i} className={`feedback-card rating-${item.rating} ${item.rating >= 4 ? 'good-review-card' : ''}`}>
+                  {/* Good Review Alert */}
+                  {item.rating >= 4 && (
+                    <div className="good-review-alert">
+                      <span className="alert-icon">🎉</span>
+                      <span className="alert-text">Good Review - Redirected to Google</span>
+                    </div>
+                  )}
+
+                  {/* Guest Details Section */}
+                  <div className="guest-details">
+                    <div className="guest-info-left">
+                      <div className="guest-name">
+                        <span className="user-icon">👤</span>
+                        <span className="name-text">
+                          {item.name || "Name not provided"}
+                        </span>
+                      </div>
+                      <div className="contact-details">
+                        <div className="contact-row">
+                          <span className="contact-icon">📧</span>
+                          <span className="contact-value">
+                            {item.email || "Email not provided"}
+                          </span>
+                        </div>
+                        <div className="contact-row">
+                          <span className="contact-icon">📱</span>
+                          <span className="contact-value">
+                            {item.phone || "Phone not provided"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="guest-info-right">
+                      <div className="rating-display">
+                        <span className="stars">
+                          {"★".repeat(item.rating)}{"☆".repeat(5 - item.rating)}
+                        </span>
+                        <span className="rating-number">{item.rating}/5</span>
+                      </div>
+                      <div className="feedback-date">
+                        <span className="date-text">
+                          {new Date(item.date).toLocaleDateString()}
+                        </span>
+                        <span className="time-text">
+                          {new Date(item.date).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                      <button
+                        className="delete-button"
+                        onClick={() => deleteFeedback(item._id)}
+                        title="Delete this feedback"
+                      >
+                        🗑️ <span className="delete-text">Delete</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Feedback Message */}
+                  <div className="feedback-message">
+                    <div className="message-header">FEEDBACK:</div>
+                    <div className="message-content">
+                      {item.message ? (
+                        item.message
+                      ) : (
+                        <em>No message provided</em>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </main>
     </div>
   );
 }
 
-export default Page;
+function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Check if user is already logged in (optional - for persistence)
+  useEffect(() => {
+    const loginStatus = localStorage.getItem('isLoggedIn');
+    if (loginStatus === 'true') {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    localStorage.setItem('isLoggedIn', 'true');
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    localStorage.removeItem('isLoggedIn');
+  };
+
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  return <DashboardContent onLogout={handleLogout} />;
+}
+
+export default App;
