@@ -138,9 +138,7 @@ export default function ReviewHomePage() {
                             />
                         </div>
 
-                        <p className="reward-text">
-                            Contact Front Desk team to collect your review reward.
-                        </p>
+                       
 
                     </div>
 
