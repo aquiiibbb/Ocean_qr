@@ -436,12 +436,13 @@
     }
 }
 .reward-text {
-    margin-top: 16px;
-    font-size: 14px;
+    margin-top: 18px;
+    font-size: 15px;
     font-weight: 600;
-    color: #21307e;
+    color:#0c1127;
     text-align: center;
-    line-height: 1.6;
-    padding: 0 12px;
-    max-width: 300px;
+    line-height: 1.5;
+    width: 100%;
+    max-width: 320px;
+    display: block;
 }

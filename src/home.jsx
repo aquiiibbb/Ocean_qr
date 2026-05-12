@@ -125,20 +125,25 @@ export default function ReviewHomePage() {
                     </p>
 
                     {/* QR Code */}
-                    <div className="qr-interaction" onClick={navigateToSurvey}>
-                        <div className="qr-container">
-                            <img
-                                src={qrCodeImage}
-                                alt="QR Code for Hotel Reviews"
-                                className="qr-code-image"
-                            />
-                        </div>
+                   {/* QR Code */}
+<div className="qr-interaction">
 
-                        {/* Reward Text */}
-                        <p className="reward-text">
-                            Contact Front Desk team to collect your review reward.
-                        </p>
-                    </div>
+    <div
+        className="qr-container"
+        onClick={navigateToSurvey}
+    >
+        <img
+            src={qrCodeImage}
+            alt="QR Code for Hotel Reviews"
+            className="qr-code-image"
+        />
+    </div>
+
+    <p className="reward-text">
+        Contact Front Desk team to collect your review reward.
+    </p>
+
+</div>
 
                 </div>
 
