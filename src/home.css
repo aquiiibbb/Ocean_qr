@@ -435,13 +435,3 @@
         height: 70px;
     }
 }
-.reward-text {
-    margin-top: 16px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #21307e;
-    text-align: center;
-    line-height: 1.6;
-    padding: 0 12px;
-    max-width: 300px;
-}
