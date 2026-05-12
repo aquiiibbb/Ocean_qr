@@ -184,7 +184,7 @@ function Page() {
     <div className="container">
       <div className="card">
         <div className="hotel-icon"><img src={hotelLogo1} alt="Hotel Logo" /></div>
-        <h1>How was your dining experience?</h1>
+        <h1>How was your stay?</h1>
         <p className="subtitle">Please rate your experience with us</p>
 
         {!showUserForm && (
