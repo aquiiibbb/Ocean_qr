@@ -40,7 +40,7 @@
     text-align: center;
     position: relative;
     overflow: hidden;
-}   
+}
 
 .logo-wrap {
     width: 110px;
@@ -59,7 +59,7 @@
 
 .logo-image {
     width: 110px;
-    height: 110px;   
+    height: 110px;
     object-fit: fill;
 }
 
@@ -87,7 +87,7 @@
 
 /* ── Card Body ── */
 .card-body {
-  background:rgb(245, 241, 241);
+    background: rgb(245, 241, 241);
     padding: 32px 28px;
     display: flex;
     flex-direction: column;
@@ -435,14 +435,13 @@
         height: 70px;
     }
 }
+
 .reward-text {
-    margin-top: 18px;
+    margin-top: 20px;
     font-size: 15px;
-    font-weight: 600;
-    color:#0c1127;
+    font-weight: 700;
+    color: #090b14;
     text-align: center;
-    line-height: 1.5;
-    width: 100%;
+    line-height: 1.6;
     max-width: 320px;
-    display: block;
 }

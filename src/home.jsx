@@ -92,7 +92,7 @@ export default function ReviewHomePage() {
                 {/* Body */}
                 <div className="card-body">
 
-                    {/* Google Review Button */}
+                    {/* Google */}
                     <button
                         className="platform-btn google-btn"
                         onClick={openGoogleReviews}
@@ -124,26 +124,25 @@ export default function ReviewHomePage() {
                         Enjoyed Your Stay? Review Us on Google
                     </p>
 
-                    {/* QR Code */}
-                   {/* QR Code */}
-<div className="qr-interaction">
+                    {/* QR Section */}
+                    <div className="qr-interaction">
 
-    <div
-        className="qr-container"
-        onClick={navigateToSurvey}
-    >
-        <img
-            src={qrCodeImage}
-            alt="QR Code for Hotel Reviews"
-            className="qr-code-image"
-        />
-    </div>
+                        <div
+                            className="qr-container"
+                            onClick={navigateToSurvey}
+                        >
+                            <img
+                                src={qrCodeImage}
+                                alt="QR Code for Hotel Reviews"
+                                className="qr-code-image"
+                            />
+                        </div>
 
-    <p className="reward-text">
-        Contact Front Desk team to collect your review reward.
-    </p>
+                        <p className="reward-text">
+                            Contact Front Desk team to collect your review reward.
+                        </p>
 
-</div>
+                    </div>
 
                 </div>
 
